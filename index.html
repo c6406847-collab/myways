@@ -1,261 +1,123 @@
-import React, { useEffect, useState } from "react";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Myways</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #111;
+            color: white;
+        }
 
-// Myways - single-file React component
-// Características:
-// - Subir y personalizar foto de perfil (acepta JPG/PNG/GIF)
-// - Subir y personalizar fondo (acepta JPG/PNG/GIF; GIFs se reproducen como fondo)
-// - Previsualización en tiempo real
-// - Guarda la configuración en localStorage (sin backend)
-// - Fácil de pegar en un proyecto Vite/CRA/CodeSandbox
+        .blur-layer {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
 
-export default function MywaysApp() {
-  const [profile, setProfile] = useState(null); // dataURL
-  const [background, setBackground] = useState(null); // dataURL
-  const [displayName, setDisplayName] = useState("Usuario");
-  const [themeOverlay, setThemeOverlay] = useState(40);
+        .container {
+            position: relative;
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
 
-  useEffect(() => {
-    // Cargar desde localStorage
-    const p = localStorage.getItem("myways_profile");
-    const b = localStorage.getItem("myways_background");
-    const name = localStorage.getItem("myways_displayName");
-    const overlay = localStorage.getItem("myways_themeOverlay");
-    if (p) setProfile(p);
-    if (b) setBackground(b);
-    if (name) setDisplayName(name);
-    if (overlay) setThemeOverlay(Number(overlay));
-  }, []);
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+        }
 
-  useEffect(() => {
-    // Guardar en localStorage cuando cambian
-    if (profile) localStorage.setItem("myways_profile", profile);
-    else localStorage.removeItem("myways_profile");
-  }, [profile]);
+        .btn {
+            display: block;
+            background: purple;
+            padding: 10px;
+            margin: 10px auto;
+            text-align: center;
+            width: 70%;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+        }
 
-  useEffect(() => {
-    if (background) localStorage.setItem("myways_background", background);
-    else localStorage.removeItem("myways_background");
-  }, [background]);
+        input[type="file"] {
+            display: none;
+        }
 
-  useEffect(() => {
-    localStorage.setItem("myways_displayName", displayName);
-  }, [displayName]);
+        .input-text {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+    </style>
+</head>
 
-  useEffect(() => {
-    localStorage.setItem("myways_themeOverlay", String(themeOverlay));
-  }, [themeOverlay]);
+<body>
 
-  function handleFileUpload(e, setter) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const allowed = ["image/png", "image/jpeg", "image/gif"]; // aceptar gifs
-    if (!allowed.includes(file.type)) {
-      alert("Formato no soportado. Usa PNG, JPG o GIF.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setter(ev.target.result);
+<div class="blur-layer"></div>
+
+<div class="container">
+    <h2 style="text-align:center;">Myways ✨</h2>
+
+    <!-- Foto de perfil -->
+    <img id="avatar" class="avatar" src="https://i.imgur.com/1Q9Z1Zm.png" />
+
+    <label class="btn" for="avatarInput">Cambiar foto de perfil</label>
+    <input id="avatarInput" type="file" accept="image/*">
+
+    <input id="username" class="input-text" value="Myways User" />
+
+    <label class="btn" style="background: dodgerblue;" for="bgInput">Cambiar fondo</label>
+    <input id="bgInput" type="file" accept="image/*">
+
+</div>
+
+<script>
+    const avatarInput = document.getElementById("avatarInput");
+    const bgInput = document.getElementById("bgInput");
+    const avatar = document.getElementById("avatar");
+
+    avatarInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            avatar.src = reader.result;
+        };
+        reader.readAsDataURL(file);
     };
-    reader.readAsDataURL(file);
-  }
 
-  function removeProfile() {
-    setProfile(null);
-    localStorage.removeItem("myways_profile");
-  }
-  function removeBackground() {
-    setBackground(null);
-    localStorage.removeItem("myways_background");
-  }
+    bgInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.body.style.backgroundImage = `url(${reader.result})`;
+        };
+        reader.readAsDataURL(file);
+    };
+</script>
 
-  // Algunos GIFs de ejemplo (data URLs no incluidos — usamos URLs externas públicas)
-  // Si quieres usar tus propios GIFs, súbelos con los inputs.
-  const sampleGifs = [
-    "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
-    "https://media.giphy.com/media/l4EoX4m9h9J2fPv7a/giphy.gif",
-    "https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif",
-  ];
-
-  return (
-    <div className="min-h-screen bg-gray-100 p-6 flex flex-col md:flex-row gap-6">
-      {/* Preview */}
-      <div className="flex-1 max-w-3xl mx-auto md:mx-0">
-        <div className="rounded-2xl overflow-hidden shadow-2xl relative">
-          <div
-            className="w-full h-64 md:h-72 bg-center bg-cover"
-            style={{
-              backgroundImage: background
-                ? `url(${background})`
-                : `linear-gradient(90deg,#111827,#1f2937)`,
-            }}
-          >
-            {/* overlay para hacer que el texto/profile destaque */}
-            <div
-              style={{
-                background: `rgba(0,0,0,${themeOverlay / 100})`,
-                height: "100%",
-              }}
-            >
-              <div className="p-6 flex items-end h-full">
-                <div className="-mt-14 md:-mt-16">
-                  <div className="w-28 h-28 md:w-36 md:h-36 rounded-full border-4 border-white overflow-hidden bg-white shadow-xl">
-                    {profile ? (
-                      <img
-                        src={profile}
-                        alt="avatar"
-                        className="w-full h-full object-cover"
-                        draggable={false}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        Sin avatar
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="ml-4 text-white">
-                  <h2 className="text-2xl font-bold">{displayName}</h2>
-                  <p className="text-sm opacity-80">Perfil público — myways</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 bg-white">
-            <h3 className="font-semibold mb-2">Acerca</h3>
-            <p className="text-sm text-gray-600">
-              Esta es una vista previa simple de tu perfil. Puedes subir una foto
-              de perfil y un fondo (también GIFs). Todo se guarda localmente en
-              tu navegador.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="w-full md:w-96">
-        <div className="space-y-4">
-          <div className="p-4 bg-white rounded-2xl shadow">
-            <label className="block text-sm font-medium mb-2">Nombre</label>
-            <input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full border rounded px-3 py-2"
-            />
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl shadow">
-            <h4 className="font-semibold mb-2">Avatar</h4>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, setProfile)}
-            />
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => removeProfile()}
-                className="px-3 py-1 rounded bg-red-600 text-white text-sm"
-              >
-                Eliminar avatar
-              </button>
-              <button
-                onClick={() => {
-                  // descargar avatar si existe
-                  if (!profile) return alert("No hay avatar para descargar");
-                  const a = document.createElement("a");
-                  a.href = profile;
-                  a.download = "myways-avatar";
-                  a.click();
-                }}
-                className="px-3 py-1 rounded bg-blue-600 text-white text-sm"
-              >
-                Descargar avatar
-              </button>
-            </div>
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl shadow">
-            <h4 className="font-semibold mb-2">Fondo</h4>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload(e, setBackground)}
-            />
-            <div className="mt-3 flex gap-2 flex-wrap">
-              {sampleGifs.map((g, i) => (
-                <button
-                  key={i}
-                  onClick={() => setBackground(g)}
-                  className="text-xs px-2 py-1 border rounded"
-                >
-                  GIF {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() => removeBackground()}
-                className="px-3 py-1 rounded bg-red-600 text-white text-sm"
-              >
-                Eliminar fondo
-              </button>
-            </div>
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl shadow">
-            <h4 className="font-semibold mb-2">Ajustes de visual</h4>
-            <label className="block text-xs mb-1">Opacidad del overlay: {themeOverlay}%</label>
-            <input
-              type="range"
-              min={0}
-              max={90}
-              value={themeOverlay}
-              onChange={(e) => setThemeOverlay(Number(e.target.value))}
-            />
-            <p className="text-xs text-gray-500 mt-2">Ajusta para que el texto y el avatar destaquen sobre fondos muy activos (GIFs).</p>
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl shadow flex gap-2">
-            <button
-              onClick={() => {
-                // Exportar configuración (descarga JSON)
-                const data = { profile, background, displayName, themeOverlay };
-                const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "myways-config.json";
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-              className="flex-1 px-3 py-2 rounded bg-green-600 text-white"
-            >
-              Exportar perfil
-            </button>
-            <button
-              onClick={() => {
-                localStorage.clear();
-                setProfile(null);
-                setBackground(null);
-                setDisplayName("Usuario");
-                setThemeOverlay(40);
-                alert("Restablecido (se borró localStorage)");
-              }}
-              className="px-3 py-2 rounded bg-gray-200"
-            >
-              Reset
-            </button>
-          </div>
-
-          <div className="p-4 bg-white rounded-2xl shadow">
-            <h4 className="font-semibold mb-2">Notas</h4>
-            <ul className="text-sm text-gray-600 list-disc pl-5">
-              <li>Esto guarda solo en tu navegador (sin cuentas aún).</li>
-              <li>Para multi-usuario necesitas un backend y almacenamiento (p. ej. Firebase, Supabase o tu propio servidor).</li>
-              <li>Los GIFs se reproducen si el navegador los soporta como background-image (la mayoría lo hace).</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+</body>
+</html>
